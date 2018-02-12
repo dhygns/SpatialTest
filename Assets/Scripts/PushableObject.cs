@@ -2,8 +2,10 @@
 using System.Collections.Generic;
 using UnityEngine;
 
+using FEC = FingerEventChecker;
+using GroupEvent = FingerEventChecker.GROUPEVENT;
+
 public class PushableObject : MonoBehaviour {
-    public FingerEventChecker FEC;
     // Use this for initialization
 
     public float chasingSpeed;
@@ -22,15 +24,20 @@ public class PushableObject : MonoBehaviour {
         transform.position += (targetPosition - transform.position) * chasingSpeed* Time.deltaTime;
         transform.LookAt(Camera.main.transform);
 
-		switch(FEC.GetEventStatus())
+		switch(FEC.GetEventState())
         {
-            case FingerEventChecker.GROUPEVENT.Idle: break;
-            case FingerEventChecker.GROUPEVENT.PushAndPull:
+            case GroupEvent.Idle: break;
+            case GroupEvent.PushAndPull:
                 {
                     targetPosition -= transform.forward * FEC.GetEventValue().x * Time.deltaTime * interactionSpeed;
 
                     float dist = (Camera.main.transform.position - targetPosition).magnitude;
                     if (dist < 0.8f) targetPosition -= transform.forward;
+                }
+                break;
+            case GroupEvent.PartialSelect:
+                {
+
                 }
                 break;
         }

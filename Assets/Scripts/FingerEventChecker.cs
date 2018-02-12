@@ -18,7 +18,9 @@ public class FingerEventChecker : MonoBehaviour, IInputHandler
     private IInputSource _IIS;
 
     private GROUPEVENT _EventState;
-    private Vector3 _EventValue;
+    private Vector4 _EventValue;
+    private Vector3 _EventLTValue;
+    private Vector3 _EventRBValue;
     //Transforms
 
     public class Finger
@@ -31,16 +33,19 @@ public class FingerEventChecker : MonoBehaviour, IInputHandler
 
     private Dictionary<uint, Finger> _Fingers;
 
+
+    static private FingerEventChecker instance;
     private void Awake()
     {
-        _IDs = new Queue<uint>();
-        _Fingers = new Dictionary<uint, Finger>();
-        _EventState = GROUPEVENT.Idle;
+        if(!instance) instance = this;
     }
 
     // Use this for initialization
     void Start()
     {
+        _IDs = new Queue<uint>();
+        _Fingers = new Dictionary<uint, Finger>();
+        _EventState = GROUPEVENT.Idle;
     }
 
     // Update is called once per frame
@@ -68,7 +73,7 @@ public class FingerEventChecker : MonoBehaviour, IInputHandler
     public void OnInputUp(InputEventData eventData)
     {
         _EventState = GROUPEVENT.Idle;
-        _EventValue = Vector3.zero;
+        _EventValue = Vector4.zero;
 
         _IIS = null;
         _IDs.Clear();
@@ -129,7 +134,7 @@ public class FingerEventChecker : MonoBehaviour, IInputHandler
     /// </summary>
     public void SeperatingEvent()
     {
-
+        Debug.Log("Event Stats :" + _EventState);
         //Excuting Condition
         if (_EventState != GROUPEVENT.Idle) return;
         if (_Fingers.Count < 2) return;
@@ -142,9 +147,8 @@ public class FingerEventChecker : MonoBehaviour, IInputHandler
             //Step1. Checking GroupPush & GroupPull
             {
                 Vector3 DeltaPosition = (value.OrinPosition - value.ViewPosition);
-                float Threshold = DeltaPosition.magnitude;
-                
-                if ((DeltaPosition.z < -0.05 || DeltaPosition.z > 0.05) && Threshold > 0.05)
+
+                if ((DeltaPosition.z < -0.01f || DeltaPosition.z > 0.01f))
                 {
                     _EventState = GROUPEVENT.PushAndPull;
                     return;
@@ -154,7 +158,18 @@ public class FingerEventChecker : MonoBehaviour, IInputHandler
             //Step2. Checking Drag & Select
             {
                 Vector3 DeltaPosition = (value.OrinPosition - value.ViewPosition);
-                float Treshold = DeltaPosition.x + DeltaPosition.y;
+                float Threshold = DeltaPosition.x + DeltaPosition.y;
+
+                if (Mathf.Abs(DeltaPosition.x) > 0.09f || Mathf.Abs(DeltaPosition.y) > 0.09f)
+                {
+                    _EventState = GROUPEVENT.PartialSelect;
+                    return;
+                }
+            }
+
+            //Step3. ?
+            {
+
             }
         }
 
@@ -170,7 +185,9 @@ public class FingerEventChecker : MonoBehaviour, IInputHandler
             case GROUPEVENT.PushAndPull:
                 UpdateGroupPushAndPull();
                 break;
-
+            case GROUPEVENT.PartialSelect:
+                UpdateGroupPartialSelect();
+                break;
             case GROUPEVENT.Idle:
                 UpdateIdle();
                 break;
@@ -191,9 +208,31 @@ public class FingerEventChecker : MonoBehaviour, IInputHandler
                 value.ViewPosition.z - value.OrinPosition.z : pushDistance;
         }
 
-        _EventValue = Vector3.one * pushDistance;
+        _EventValue = Vector4.one * pushDistance;
 
         //Debug.Log(_EventValue);
+    }
+    private void UpdateGroupPartialSelect()
+    {
+        uint cnt = 0;
+
+        foreach (KeyValuePair<uint, Finger> pair in _Fingers)
+        {
+            if (cnt == 2) continue;
+            uint id = pair.Key;
+            Finger value = pair.Value;
+
+            if (cnt == 0)
+            {
+                _EventLTValue = value.ViewPosition;
+            }
+            else
+            {
+                _EventRBValue = value.ViewPosition;
+            }
+
+            cnt++;
+        }
     }
 
     private void UpdateIdle()
@@ -201,13 +240,45 @@ public class FingerEventChecker : MonoBehaviour, IInputHandler
 
     }
 
-    public GROUPEVENT GetEventStatus()
+    public GROUPEVENT getEventState()
     {
         return _EventState;
     }
 
-    public Vector3 GetEventValue()
+    public Vector4 getEventValue()
     {
         return _EventValue;
+    }
+
+    public Vector3 getEventLTValue()
+    {
+        return _EventLTValue;
+    }
+
+    public Vector3 getEventRBValue()
+    {
+        return _EventRBValue;
+    }
+
+
+
+    static public GROUPEVENT GetEventState()
+    {
+        return instance.getEventState();
+    }
+
+    static public Vector4 GetEventValue()
+    {
+        return instance.getEventValue();
+    }
+
+    static public Vector3 GetEventLTValue()
+    {
+        return instance.getEventLTValue();
+    }
+
+    static public Vector3 GetEventRBValue()
+    {
+        return instance.getEventRBValue();
     }
 }
