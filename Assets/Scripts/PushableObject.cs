@@ -24,8 +24,8 @@ public class PushableObject : MonoBehaviour {
 
 		switch(FEC.GetEventStatus())
         {
-            case FingerEventChecker.EVENT.Idle: break;
-            case FingerEventChecker.EVENT.GroupPushAndPull:
+            case FingerEventChecker.GROUPEVENT.Idle: break;
+            case FingerEventChecker.GROUPEVENT.PushAndPull:
                 {
                     targetPosition -= transform.forward * FEC.GetEventValue().x * Time.deltaTime * interactionSpeed;
 
@@ -35,4 +35,10 @@ public class PushableObject : MonoBehaviour {
                 break;
         }
 	}
+
+
+    public bool getViewPortPosition()
+    {
+        return false;
+    }
 }

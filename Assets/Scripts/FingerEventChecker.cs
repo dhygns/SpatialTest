@@ -8,16 +8,16 @@ using UnityEngine;
 public class FingerEventChecker : MonoBehaviour, IInputHandler
 {
 
-    public enum EVENT
+    public enum GROUPEVENT
     {
-        Idle, GroupPushAndPull,
+        Idle, PushAndPull, PartialSelect
     }
 
     //Events
     private Queue<uint> _IDs;
     private IInputSource _IIS;
 
-    private EVENT _EventState;
+    private GROUPEVENT _EventState;
     private Vector3 _EventValue;
     //Transforms
 
@@ -35,7 +35,7 @@ public class FingerEventChecker : MonoBehaviour, IInputHandler
     {
         _IDs = new Queue<uint>();
         _Fingers = new Dictionary<uint, Finger>();
-        _EventState = EVENT.Idle;
+        _EventState = GROUPEVENT.Idle;
     }
 
     // Use this for initialization
@@ -67,7 +67,7 @@ public class FingerEventChecker : MonoBehaviour, IInputHandler
     /// <param name="eventData"></param>
     public void OnInputUp(InputEventData eventData)
     {
-        _EventState = EVENT.Idle;
+        _EventState = GROUPEVENT.Idle;
         _EventValue = Vector3.zero;
 
         _IIS = null;
@@ -89,18 +89,23 @@ public class FingerEventChecker : MonoBehaviour, IInputHandler
         {
             Vector3 pos;
 
-            if (_IIS.TryGetGripPosition(id, out pos))
+            //Get World Position
+            if (_IIS.TryGetGripPosition(id, out pos)) 
             {
+                //Convert worldposition to viewportposition (viewport position include depth too)
+                pos = Camera.main.WorldToViewportPoint(pos);
+
                 hitCount++; //  = Available Count
                 Finger finger;
 
-                if (!_Fingers.TryGetValue(id, out finger))
+                //Trying to Get Value from Dic
+                if (!_Fingers.TryGetValue(id, out finger)) 
                 {
                     finger = new Finger();
                     finger.isFirst = false;
                     finger.OrinPosition = pos;
                     finger.ViewPosition = pos;
-
+                    
                     _Fingers[id] = finger;
                 }
 
@@ -125,10 +130,8 @@ public class FingerEventChecker : MonoBehaviour, IInputHandler
     public void SeperatingEvent()
     {
 
-        //Debug.Log(_Fingers.Count + " " + _EventState);
-
         //Excuting Condition
-        if (_EventState != EVENT.Idle) return;
+        if (_EventState != GROUPEVENT.Idle) return;
         if (_Fingers.Count < 2) return;
 
         foreach (KeyValuePair<uint, Finger> pair in _Fingers)
@@ -140,15 +143,19 @@ public class FingerEventChecker : MonoBehaviour, IInputHandler
             {
                 Vector3 DeltaPosition = (value.OrinPosition - value.ViewPosition);
                 float Threshold = DeltaPosition.magnitude;
-
+                
                 if ((DeltaPosition.z < -0.05 || DeltaPosition.z > 0.05) && Threshold > 0.05)
                 {
-                    _EventState = EVENT.GroupPushAndPull;
+                    _EventState = GROUPEVENT.PushAndPull;
                     return;
                 }
             }
 
             //Step2. Checking Drag & Select
+            {
+                Vector3 DeltaPosition = (value.OrinPosition - value.ViewPosition);
+                float Treshold = DeltaPosition.x + DeltaPosition.y;
+            }
         }
 
     }
@@ -160,11 +167,11 @@ public class FingerEventChecker : MonoBehaviour, IInputHandler
     {
         switch (_EventState)
         {
-            case EVENT.GroupPushAndPull:
+            case GROUPEVENT.PushAndPull:
                 UpdateGroupPushAndPull();
                 break;
 
-            case EVENT.Idle:
+            case GROUPEVENT.Idle:
                 UpdateIdle();
                 break;
         }
@@ -194,7 +201,7 @@ public class FingerEventChecker : MonoBehaviour, IInputHandler
 
     }
 
-    public EVENT GetEventStatus()
+    public GROUPEVENT GetEventStatus()
     {
         return _EventState;
     }
