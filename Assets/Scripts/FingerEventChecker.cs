@@ -29,6 +29,7 @@ public class FingerEventChecker : MonoBehaviour, IInputHandler
         public Vector3 OrinPosition = Vector3.zero;
         public Vector3 ViewPosition = Vector3.zero;
         public Vector3 ViewVelocity = Vector3.zero;
+        public Vector3 WorldPosition = Vector3.zero;
     }
 
     private Dictionary<uint, Finger> _Fingers;
@@ -92,13 +93,14 @@ public class FingerEventChecker : MonoBehaviour, IInputHandler
 
         foreach (uint id in _IDs)
         {
-            Vector3 pos;
+            Vector3 worldpos;
+            Vector3 viewpos;
 
             //Get World Position
-            if (_IIS.TryGetGripPosition(id, out pos)) 
+            if (_IIS.TryGetGripPosition(id, out worldpos)) 
             {
                 //Convert worldposition to viewportposition (viewport position include depth too)
-                pos = Camera.main.WorldToViewportPoint(pos);
+                viewpos = Camera.main.WorldToViewportPoint(worldpos);
 
                 hitCount++; //  = Available Count
                 Finger finger;
@@ -108,14 +110,15 @@ public class FingerEventChecker : MonoBehaviour, IInputHandler
                 {
                     finger = new Finger();
                     finger.isFirst = false;
-                    finger.OrinPosition = pos;
-                    finger.ViewPosition = pos;
-                    
+                    finger.OrinPosition = viewpos;
+                    finger.ViewPosition = viewpos;
+                    finger.WorldPosition = worldpos;
                     _Fingers[id] = finger;
                 }
 
-                finger.ViewVelocity = pos - finger.ViewPosition;
-                finger.ViewPosition = pos;
+                finger.ViewVelocity = (viewpos - finger.ViewPosition) * Time.deltaTime;
+                finger.WorldPosition = worldpos;
+                finger.ViewPosition = viewpos;
             }
             else
             {
@@ -260,6 +263,11 @@ public class FingerEventChecker : MonoBehaviour, IInputHandler
         return _EventRBValue;
     }
 
+    public Dictionary<uint, Finger> getFingers()
+    {
+        return _Fingers;
+    }
+
 
 
     static public GROUPEVENT GetEventState()
@@ -280,5 +288,10 @@ public class FingerEventChecker : MonoBehaviour, IInputHandler
     static public Vector3 GetEventRBValue()
     {
         return instance.getEventRBValue();
+    }
+
+    static public Dictionary<uint, Finger> GetFingers()
+    {
+        return instance.getFingers();
     }
 }
