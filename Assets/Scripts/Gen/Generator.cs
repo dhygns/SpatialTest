@@ -88,6 +88,8 @@ public class Generator : MonoBehaviour
         mesh.SetUVs(0, uvs);
 
         mesh.UploadMeshData(true);
+
+        Debug.Log("GITHUB TEST");
     }
 
 }
