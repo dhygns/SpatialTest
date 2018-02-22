@@ -341,6 +341,11 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 61e04ae6d9f509946be88b443ed00680, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
+--- !u!20 &1409388638 stripped
+Camera:
+  m_PrefabParentObject: {fileID: 20049547090947856, guid: 3eddd1c29199313478dd3f912bfab2ab,
+    type: 2}
+  m_PrefabInternal: {fileID: 47988246}
 --- !u!4 &1611891746 stripped
 Transform:
   m_PrefabParentObject: {fileID: 4587520633816736, guid: d29bc40b7f3df26479d6a0aac211c355,
@@ -426,6 +431,7 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 5de0d679e3e335640931605352bdc11b, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
+  _camera: {fileID: 1409388638}
   _prefabDot: {fileID: 1144167415786632, guid: 89b8fd8d23c1e0e4b9a788b95a3aae3d, type: 2}
 --- !u!4 &2078415635
 Transform:

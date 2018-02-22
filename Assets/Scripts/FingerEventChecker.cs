@@ -137,7 +137,7 @@ public class FingerEventChecker : MonoBehaviour, IInputHandler
     /// </summary>
     public void SeperatingEvent()
     {
-        Debug.Log("Event Stats :" + _EventState);
+        //Debug.Log("Event Stats :" + _EventState);
         //Excuting Condition
         if (_EventState != GROUPEVENT.Idle) return;
         if (_Fingers.Count < 2) return;
@@ -151,7 +151,10 @@ public class FingerEventChecker : MonoBehaviour, IInputHandler
             {
                 Vector3 DeltaPosition = (value.OrinPosition - value.ViewPosition);
 
-                if ((DeltaPosition.z < -0.01f || DeltaPosition.z > 0.01f))
+                if (
+                    Mathf.Abs(DeltaPosition.x) < 0.09f &&
+                    Mathf.Abs(DeltaPosition.y) < 0.09f &&
+                    Mathf.Abs(DeltaPosition.z) > 0.02f)
                 {
                     _EventState = GROUPEVENT.PushAndPull;
                     return;
@@ -163,7 +166,10 @@ public class FingerEventChecker : MonoBehaviour, IInputHandler
                 Vector3 DeltaPosition = (value.OrinPosition - value.ViewPosition);
                 float Threshold = DeltaPosition.x + DeltaPosition.y;
 
-                if (Mathf.Abs(DeltaPosition.x) > 0.09f || Mathf.Abs(DeltaPosition.y) > 0.09f)
+                if (
+                    Mathf.Abs(DeltaPosition.x) > 0.09f && 
+                    Mathf.Abs(DeltaPosition.y) > 0.09f &&
+                    Mathf.Abs(DeltaPosition.z) < 0.02f)
                 {
                     _EventState = GROUPEVENT.PartialSelect;
                     return;

@@ -3,6 +3,7 @@
 	Properties
 	{
 		_MainTex("Texture", 2D) = "white" {}
+		_Bending("Bending", range(0.0, 1.0)) = 0.5
 	}
 		SubShader
 	{
@@ -36,11 +37,13 @@
 		return frac(sin(dot(co.xyz, float3(12.9898, 78.233, 45.5432))) * 43758.5453);
 	}
 
+	float _Bending;
+
 	v2f vert(appdata v)
 	{
 		const float PI = 3.141592;
 		v2f o;
-		v.vertex.z = v.vertex.z + sin(v.uv.x * PI) * sin(_Time.y) * 0.2;
+		v.vertex.z = v.vertex.z + sin(v.uv.x * PI) * _Bending;
 		o.vertex = UnityObjectToClipPos(v.vertex);
 		o.uv = v.uv;
 		return o;
