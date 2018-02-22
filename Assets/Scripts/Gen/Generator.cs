@@ -90,6 +90,7 @@ public class Generator : MonoBehaviour
         mesh.UploadMeshData(true);
 
         Debug.Log("GITHUB TEST");
+        Debug.Log("ADDED ONE MORE LOG");
     }
 
 }
